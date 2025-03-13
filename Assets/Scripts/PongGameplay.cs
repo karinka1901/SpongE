@@ -1,15 +1,16 @@
 using UnityEngine;
 using SimpleJSON; // For JSON parsing
-using System.Collections.Generic;
 using PimDeWitte.UnityMainThreadDispatcher;
 using System.Collections;
-using System.Data;
-using UnityEngine.UIElements;
+
 
 public class PongGameplay : MonoBehaviour
 {
     [SerializeField] private SocketIOUnity socket;
-    
+    public UIManager uiManager;
+    [SerializeField] private bool gameOver = false;
+
+
     [Header("Ball")]
     [SerializeField] private GameObject spawnedBall;
     [SerializeField] private BallController ballController;
@@ -31,7 +32,8 @@ public class PongGameplay : MonoBehaviour
 
     [Header("Player Role")]
      private bool isPlayerAssigned = false;
-    [SerializeField] private string playerRole = ""; 
+    [SerializeField] private string playerRole = "";
+    [SerializeField] private bool playersReady = false;
 
     private void Start()
     {
@@ -65,6 +67,7 @@ public class PongGameplay : MonoBehaviour
             UnityMainThreadDispatcher.Instance().Enqueue(() => SpawnPaddle(role));
 
         });
+
         socket.On("updatePaddle", response =>
         {
             JSONNode data = JSON.Parse(response.ToString());
@@ -115,6 +118,7 @@ public class PongGameplay : MonoBehaviour
                 {
                     SpawnBall();
                 }
+                
             });
 
         });
@@ -138,6 +142,15 @@ public class PongGameplay : MonoBehaviour
             });
         });
 
+        socket.On("hideStartText", response =>
+        {
+            UnityMainThreadDispatcher.Instance().Enqueue(() =>
+            {
+                DebugUtils.LogColor("Hiding start text for all players!", "green");
+                uiManager.ActivateUIelement(uiManager.start_txt, false);
+            });
+        });
+
         //Score events
         socket.On("updateScore", response =>
         {
@@ -145,9 +158,27 @@ public class PongGameplay : MonoBehaviour
             int leftScore = data[0]["left"];
             int rightScore = data[0]["right"];
             DebugUtils.LogColor($"Left score: {leftScore}, Right score: {rightScore}", "grey");
+
+            UnityMainThreadDispatcher.Instance().Enqueue(() =>
+            {
+                ScoreManager.Instance.SyncScore(leftScore, rightScore);
+            });
+        });
+
+        socket.On("gameOver", response =>
+        {
+            JSONNode winner = JSON.Parse(response.ToString());
+            string player = winner[0]["winner"];
+            DebugUtils.LogColor("Game over!", "red");
+            UnityMainThreadDispatcher.Instance().Enqueue(() =>
+            {
+                GameOver(player);
+            });
         });
 
         socket.Connect();
+
+       
     }
 
 
@@ -169,6 +200,8 @@ public class PongGameplay : MonoBehaviour
                 DebugUtils.LogColor("I am the ball owner, launching ball...", "green");
                 StartCoroutine(DelayedLaunch());
             }
+
+
 
 
         });
@@ -233,9 +266,17 @@ public class PongGameplay : MonoBehaviour
 
         }
 
-        if (leftPaddleSpawned && rightPaddleSpawned) hasSpawnedPaddle = true;
+        if (leftPaddleSpawned && rightPaddleSpawned)
+        {
+            hasSpawnedPaddle = true;
+           
 
-        //  else DebugUtils.LogColor("Paddles are alreaddy spawned!", "red");
+            // Update UI
+            uiManager.ActivateUIelement(uiManager.waiting_txt, false);
+            uiManager.ActivateUIelement(uiManager.start_txt, true);
+        }
+
+
 
     }
 
@@ -248,69 +289,113 @@ public class PongGameplay : MonoBehaviour
         });
     }
 
+    //UI
+    public void GameOver(string winner)
+    { 
+        Destroy(spawnedBall);
+        gameOver = true;
+        uiManager.ActivateUIelement(uiManager.gameOvere_txt, true);
+        uiManager.ActivateUIelement(uiManager.playerWon_txt, true);
+        uiManager.SetPlayerWonText(winner);
+    }
 
+    public void StartGame()
+    {
+        if (hasSpawnedPaddle && !ballSpawned)
+        {
+            DebugUtils.LogColor("Press space to start", "green");
+            socket.Emit("spawnBall");
+            socket.Emit("hideStartText");
+            uiManager.ActivateUIelement(uiManager.start_txt, false);
+        }
+    }
+    public void JoinGame()
+    {
+        if (isPlayerAssigned && !hasSpawnedPaddle)
+        {
+            socket.Emit("spawnPaddle", playerRole);
+            uiManager.ActivateUIelement(uiManager.join_txt, false);
+        }
 
+        if (!hasSpawnedPaddle)
+        {
+            DebugUtils.LogColor("Waiting for players...", "yellow");
+            uiManager.ActivateUIelement(uiManager.waiting_txt, true);
+            uiManager.ActivateUIelement(uiManager.start_txt, false);
+        }
+        else
+        {
+            DebugUtils.LogColor("Both players are ready! Press space to start.", "green");
+            uiManager.ActivateUIelement(uiManager.waiting_txt, false);
+            uiManager.ActivateUIelement(uiManager.start_txt, true);
+            playersReady = true;
+        }
+    }
 
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (isPlayerAssigned && !hasSpawnedPaddle)
-            {
-                socket.Emit("spawnPaddle", playerRole);
-            }
-            if (hasSpawnedPaddle && !ballSpawned)
-            {
-                DebugUtils.LogColor("Press space to start", "red");
-                socket.Emit("spawnBall");
-            }
-        }
+            JoinGame();
+            StartGame();
 
+        } //START GAME
 
-        if (ballSpawned && ballController!=null) //ballOwner send position and velocity
+        if(gameOver && spawnedBall != null)
         {
-            if (isBallOwner)
-            {
-                socket.Emit("updateBall", new
-                {
-                    x = spawnedBall.transform.position.x,
-                    y = spawnedBall.transform.position.y,
-                    vx = ballRb.velocity.x,
-                    vy = ballRb.velocity.y
-                });
-            } //ball movement
-            if (ballController.goalHit)
-            {
-                Destroy(spawnedBall);
-                RespawnBall();
-                socket.Emit("updateScore", new
-                {
-                    left = ballController.leftScore,
-                    right = ballController.rightScore
-                });
-            } //ball respawn
-        }
+            Destroy(spawnedBall);
+        } //GAME OVER
 
-        if (hasSpawnedPaddle)
+        if (!gameOver)
         {
-            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S))
+            if (ballSpawned && ballController != null) //ballOwner send position and velocity
             {
-                if (playerRole == "left")
+                if (isBallOwner)
                 {
-                    leftPaddleController.MovePaddle();
-                    SendPaddleMovement(leftPaddle.transform.position.y);
-                }
-                else if (playerRole == "right")
+                    socket.Emit("updateBall", new
+                    {
+                        x = spawnedBall.transform.position.x,
+                        y = spawnedBall.transform.position.y,
+                        vx = ballRb.velocity.x,
+                        vy = ballRb.velocity.y
+                    });
+                } //ball movement
+
+                if (ballController.goalHit)
                 {
-                    rightPaddleController.MovePaddle();
-                    SendPaddleMovement(rightPaddle.transform.position.y);
+                    Destroy(spawnedBall);
+                    RespawnBall();
+                   
+                        socket.Emit("updateScore", new
+                        {
+                            left = ScoreManager.Instance.leftScore,
+                            right = ScoreManager.Instance.rightScore
+                        });
+                    
 
-                }
-
+                } //Scoring and ball respawning
             }
-        } //MOVEMENT
 
+            if (hasSpawnedPaddle)
+            {
+                if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S))
+                {
+                    if (playerRole == "left")
+                    {
+                        leftPaddleController.MovePaddle();
+                        SendPaddleMovement(leftPaddle.transform.position.y);
+                    }
+                    else if (playerRole == "right")
+                    {
+                        rightPaddleController.MovePaddle();
+                        SendPaddleMovement(rightPaddle.transform.position.y);
+
+                    }
+
+                }
+            } //MOVEMENT
+        }
      
     }
 }

@@ -7,19 +7,24 @@ public class BallController : MonoBehaviour
     public Rigidbody2D rb;
     public float xDirection;
     public float yDirection;
-    public int leftScore = 0;
-    public int rightScore = 0;
-    public bool goalHit = false;
-
+    public bool goalHit = false; 
     public Animator ballAnimator;
-    
-   // public bool ballReset = false;
+
+    public int leftScore;
+    public int rightScore;
+
+    public ScoreManager scoreManager;
 
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         ballAnimator = GetComponent<Animator>();
+
+        rightScore = ScoreManager.Instance.rightScore;
+        leftScore = ScoreManager.Instance.leftScore;
+
+        
     }
 
     public void LaunchBall()
@@ -30,9 +35,9 @@ public class BallController : MonoBehaviour
         Vector2 direction = new Vector2(xDirection, yDirection).normalized;
 
         rb.velocity = direction * ballSpeed;
-        rb.WakeUp(); // Ensure Rigidbody is awake
+        rb.WakeUp(); 
 
-        DebugUtils.LogColor($"[BallController.cs]Ball launched with velocity: {rb.velocity}", "grey");
+       // DebugUtils.LogColor($"[BallController.cs]Ball launched with velocity: {rb.velocity}", "grey");
         Physics2D.SyncTransforms();
         //ballReset = false;
     }
@@ -42,7 +47,7 @@ public class BallController : MonoBehaviour
         rb.velocity = Vector2.zero;
         ballAnimator.Play("goalHit");
         rb.position = Vector2.zero;
-        DebugUtils.LogColor($"[BallController.cs]Ball reset", "yellow");
+        DebugUtils.LogColor($"[BallController.cs]Ball reset", "grey");
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -51,16 +56,13 @@ public class BallController : MonoBehaviour
         {
             rb.velocity = new Vector2(-rb.velocity.x, rb.velocity.y).normalized * ballSpeed;
         }
-        //else if (collision.gameObject.CompareTag("Wall"))
-        //{
-        //    rb.velocity = new Vector2(rb.velocity.x, -rb.velocity.y);
-        //}
         else if (collision.gameObject.CompareTag("LeftGoal"))
         {
             goalHit = true;
-            leftScore++;
 
-            DebugUtils.LogColor($"[BallController.cs]Left goal hit", "red");
+            ScoreManager.Instance.UpdateScore("right"); // Right player scores
+
+            DebugUtils.LogColor($"[BallController.cs]Left goal hit, right paddle scores", "red");
             ResetBall();
             
             
@@ -69,8 +71,9 @@ public class BallController : MonoBehaviour
         else if (collision.gameObject.CompareTag("RightGoal"))
         {   
             goalHit = true;
-            rightScore++;
-            DebugUtils.LogColor($"[BallController.cs]reight goal hit", "blue");
+            ScoreManager.Instance.UpdateScore("left"); // Left player scores
+
+            DebugUtils.LogColor($"[BallController.cs]reight goal hit, left paddle scores", "blue");
             ResetBall();
             
             
