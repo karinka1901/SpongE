@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class ScoreManager : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class ScoreManager : MonoBehaviour
 
     public int leftScore = 0;
     public int rightScore = 0;
+ 
 
     private void Awake()
     {
@@ -23,6 +25,7 @@ public class ScoreManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
 
     public void UpdateScore(string player)
     {
@@ -50,4 +53,6 @@ public class ScoreManager : MonoBehaviour
 
         DebugUtils.LogColor($"[ScoreManager.cs] Scores synced - Left: {leftScore} | Right: {rightScore}", "cyan");
     }
-}
+
+    
+    }

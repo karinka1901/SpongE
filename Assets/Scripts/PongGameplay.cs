@@ -2,6 +2,7 @@ using UnityEngine;
 using SimpleJSON; // For JSON parsing
 using PimDeWitte.UnityMainThreadDispatcher;
 using System.Collections;
+using System.Collections.Generic;
 
 
 public class PongGameplay : MonoBehaviour
@@ -31,7 +32,8 @@ public class PongGameplay : MonoBehaviour
     [SerializeField] private bool hasSpawnedPaddle = false;
 
     [Header("Player Role")]
-     private bool isPlayerAssigned = false;
+    [SerializeField] private bool isPlayerAssigned = false;
+    [SerializeField] private bool isNameAssigned = false;
     [SerializeField] private string playerRole = "";
     [SerializeField] private bool playersReady = false;
 
@@ -55,6 +57,31 @@ public class PongGameplay : MonoBehaviour
             isPlayerAssigned = true;
 
         });
+        socket.On("playerNameAssigned", response =>
+        {
+            JSONNode data = JSON.Parse(response.ToString());
+            string role = data[0]["role"];
+            string name = data[0]["name"];
+
+            DebugUtils.LogColor($"Received player name: {role} - {name}", "green");
+
+            UnityMainThreadDispatcher.Instance().Enqueue(() =>
+            {
+                if (role == "left")
+                {
+                    UIManager.Instance.leftPlayerName.text = name;
+                    UIManager.Instance.AssignName(name);
+                }
+                else if (role == "right")
+                {
+                    UIManager.Instance.rightPlayerName.text = name;
+                    UIManager.Instance.AssignName(name);
+                }
+            });
+
+          //  isNameAssigned = true;
+        });
+
 
         //Paddle events
         socket.On("spawnPaddle", response =>
@@ -67,7 +94,6 @@ public class PongGameplay : MonoBehaviour
             UnityMainThreadDispatcher.Instance().Enqueue(() => SpawnPaddle(role));
 
         });
-
         socket.On("updatePaddle", response =>
         {
             JSONNode data = JSON.Parse(response.ToString());
@@ -88,7 +114,6 @@ public class PongGameplay : MonoBehaviour
                 }
             });
         });
-
 
         //Ball events
         socket.On("setBallOwner", response =>
@@ -177,8 +202,6 @@ public class PongGameplay : MonoBehaviour
         });
 
         socket.Connect();
-
-       
     }
 
 
@@ -200,10 +223,6 @@ public class PongGameplay : MonoBehaviour
                 DebugUtils.LogColor("I am the ball owner, launching ball...", "green");
                 StartCoroutine(DelayedLaunch());
             }
-
-
-
-
         });
     }
 
@@ -335,6 +354,23 @@ public class PongGameplay : MonoBehaviour
 
     private void Update()
     {
+        if(isPlayerAssigned && UIManager.Instance.nameAssigned && !isNameAssigned)
+        {
+            UIManager.Instance.AssignName(playerRole);
+            
+            DebugUtils.LogColor($"Assigning name {playerRole} {UIManager.Instance.playerName}", "green");
+
+            PongDatabase.Instance.SendPlayerNameToDatabase(UIManager.Instance.playerName);
+
+            socket.Emit("playerNameAssigned", new
+            {
+                role = playerRole,
+                name = UIManager.Instance.playerName
+
+            });
+            isNameAssigned = true;
+        } //Assignig name
+
         if (Input.GetKeyDown(KeyCode.Space))
         {
             JoinGame();
