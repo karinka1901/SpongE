@@ -48,7 +48,7 @@ public class PongGameManager : MonoBehaviour
     }
     private void Start()
     {
-        socket = new SocketIOUnity("http://localhost:3000");
+        socket = new SocketIOUnity("http://192.168.0.240:3000"); 
 
         socket.OnConnected += (sender, e) =>
         {

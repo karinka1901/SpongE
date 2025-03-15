@@ -4,18 +4,44 @@ using UnityEngine;
 
 public class ServerManager : MonoBehaviour
 {
-    private Process serverProcess;
-   
+    public static ServerManager Instance { get; private set; }
 
+    private Process serverProcess;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
     void Start()
     {
-        string serverPath = Path.Combine(Application.streamingAssetsPath, "server");
+        if (IsServerComputer()) // Only start server on the host
+        {
+            string serverPath = Path.Combine(Application.streamingAssetsPath, "server");
 
-        string nodePath = Path.Combine(serverPath, "node.exe"); 
-        if (!File.Exists(nodePath)) nodePath = "node"; 
+            string nodePath = Path.Combine(serverPath, "node.exe");
+            if (!File.Exists(nodePath)) nodePath = "node";
 
-        StartServer(serverPath, nodePath);
+            StartServer(serverPath, nodePath);
+        }
+        else
+        {
+            DebugUtils.LogColor("Client mode: Not starting the server.", "yellow");
+        }
     }
+
+    bool IsServerComputer()
+    {
+        return SystemInfo.deviceName == "LAPTOP-LK6VUOAI"; 
+    }
+
 
     void StartServer(string serverPath, string nodePath)
     {

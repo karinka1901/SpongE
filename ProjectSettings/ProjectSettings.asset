@@ -16,7 +16,7 @@ PlayerSettings:
   productName: Pong
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
-  m_SplashScreenBackgroundColor: {r: 0.36800206, g: 0.09838911, b: 0.6320754, a: 1}
+  m_SplashScreenBackgroundColor: {r: 0.44723967, g: 0, b: 0.8805031, a: 1}
   m_ShowUnitySplashScreen: 1
   m_ShowUnitySplashLogo: 1
   m_SplashScreenOverlayOpacity: 1
@@ -858,4 +858,4 @@ PlayerSettings:
   hmiLoadingImage: {fileID: 0}
   platformRequiresReadableAssets: 0
   virtualTexturingSupportEnabled: 0
-  insecureHttpOption: 0
+  insecureHttpOption: 2

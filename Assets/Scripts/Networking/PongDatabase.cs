@@ -7,8 +7,11 @@ public class PongDatabase : MonoBehaviour
 {
     public static PongDatabase Instance { get; private set; }
 
-    private string playerAddress = "http://127.0.0.1:5000/api/update-score";
-    private string leaderboardAddress = "http://127.0.0.1:5000/api/top-scores";
+    private string playerAddress = "http://192.168.0.240:5000/api/update-score";
+    private string leaderboardAddress = "http://192.168.0.240:5000/api/top-scores";
+
+
+
 
     private void Awake()
     {

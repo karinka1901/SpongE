@@ -95,6 +95,6 @@ app.get('/api/top-scores', (req, res) => {
 
 
 // Start Server
-app.listen(port, () => {
+app.listen(port,"0.0.0.0", () => {
     console.log(chalk.blue(`Server running on port ${port}`));
 });
