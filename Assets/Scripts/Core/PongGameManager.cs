@@ -40,6 +40,12 @@ public class PongGameManager : MonoBehaviour
     [Header("Misc")]
     private bool isMinimized = false;
 
+
+    private void Awake()
+    {
+        Application.targetFrameRate = 60;
+        QualitySettings.vSyncCount = 0;
+    }
     private void Start()
     {
         socket = new SocketIOUnity("http://localhost:3000");
