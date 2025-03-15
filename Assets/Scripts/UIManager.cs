@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
@@ -22,7 +23,11 @@ public class UIManager : MonoBehaviour
     public TMP_Text rightPlayerName;
     public string playerName;
 
+    public TMP_Text leaderboardResult;
+    public GameObject leaderboardPanel;
+
     public bool nameAssigned = false;
+
 
     private void Awake()
     {
@@ -44,6 +49,10 @@ public class UIManager : MonoBehaviour
         start_txt.gameObject.SetActive(false);
         waiting_txt.gameObject.SetActive(false);
 
+        leaderboardPanel.SetActive(false);
+
+
+
         leftPlayerName.text = "Player 1";
         rightPlayerName.text = "Player 2";
     }
@@ -64,7 +73,7 @@ public class UIManager : MonoBehaviour
     public void SetPlayerName()
     {
         if (nameInput.text != null) playerName = nameInput.text;
-        else playerName = "Player";
+        else playerName = "Noname";
         startPanel.SetActive(false);
         nameAssigned = true;
         DebugUtils.LogColor($"[ScoreManager.cs] Player Name: {playerName}", "magenta");
@@ -73,11 +82,16 @@ public class UIManager : MonoBehaviour
 
     public void AssignName(string playerRole)
     {
+        if (string.IsNullOrEmpty(playerName)) 
+        {
+            playerName = "Player_" + Random.Range(1, 9); // Random 4-digit number
+        }
+
+
         if (playerRole == "left")
         {
             leftPlayerName.text = playerName;
             DebugUtils.LogColor($"[ScoreManager.cs] Left Player Name: {playerName}", "green");
-
         }
         else if (playerRole == "right")
         {
@@ -85,5 +99,26 @@ public class UIManager : MonoBehaviour
             DebugUtils.LogColor($"[ScoreManager.cs] Right Player Name: {playerName}", "green");
         }
 
+    }
+
+
+    public void OpenLeaderboard()
+    {
+        leaderboardPanel.SetActive(true);
+        startPanel.SetActive(false);
+        PongDatabase.Instance.FetchTopScores();
+        DebugUtils.LogColor($"[ScoreManager.cs] fetching OpenLeaderboard", "yellow");
+    }
+
+    public void CloseLeaderboard()
+    {
+        leaderboardPanel.SetActive(false);
+        startPanel.SetActive(true);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    public void UpdateLeaderboard(string data)
+    {
+        
+        leaderboardResult.text = data;
     }
 }

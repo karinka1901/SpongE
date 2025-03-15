@@ -9,6 +9,8 @@ TagManager:
   - Goal
   - LeftGoal
   - RightGoal
+  - LeftPaddle
+  - RightPaddle
   layers:
   - Default
   - TransparentFX

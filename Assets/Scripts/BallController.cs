@@ -54,8 +54,15 @@ public class BallController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Paddle"))
         {
-            rb.velocity = new Vector2(-rb.velocity.x, rb.velocity.y).normalized * ballSpeed;
+            //rb.velocity = new Vector2(-rb.velocity.x, rb.velocity.y).normalized * ballSpeed;
+            //transform.position += new Vector3(1f, 0, 0);
+            Vector2 vel;
+            vel.x = -rb.velocity.x; // Reverse X direction
+            vel.y = (rb.velocity.y / 2) + (collision.collider.attachedRigidbody.velocity.y / 3); // Adjust Y based on paddle movement
+            rb.velocity = vel; // Normalize to maintain consistent speed
         }
+       
+
         else if (collision.gameObject.CompareTag("LeftGoal"))
         {
             goalHit = true;

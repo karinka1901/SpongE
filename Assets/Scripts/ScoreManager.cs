@@ -1,6 +1,5 @@
 using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
 
 public class ScoreManager : MonoBehaviour
 {
@@ -12,6 +11,8 @@ public class ScoreManager : MonoBehaviour
     public int leftScore = 0;
     public int rightScore = 0;
  
+    public int totalScoreRight;
+    public int totalScoreLeft;
 
     private void Awake()
     {
@@ -54,5 +55,20 @@ public class ScoreManager : MonoBehaviour
         DebugUtils.LogColor($"[ScoreManager.cs] Scores synced - Left: {leftScore} | Right: {rightScore}", "cyan");
     }
 
-    
+    public void UpdateFianlScore(string role)
+    {
+        if(role == "left")
+        {
+            totalScoreLeft++;
+        }
+        else if (role == "right")
+        {
+            totalScoreRight++;
+        }
     }
+
+ 
+
+ 
+
+}

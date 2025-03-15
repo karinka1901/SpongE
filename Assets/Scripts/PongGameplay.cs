@@ -36,6 +36,7 @@ public class PongGameplay : MonoBehaviour
     [SerializeField] private bool isNameAssigned = false;
     [SerializeField] private string playerRole = "";
     [SerializeField] private bool playersReady = false;
+   [ SerializeField] private bool gameOn = false;
 
     private void Start()
     {
@@ -82,6 +83,16 @@ public class PongGameplay : MonoBehaviour
           //  isNameAssigned = true;
         });
 
+        socket.On("gameStart", response =>
+        {
+            UnityMainThreadDispatcher.Instance().Enqueue(() =>
+            {
+                if (!ballSpawned)
+                {
+                    SpawnBall();
+                }
+            });
+        });
 
         //Paddle events
         socket.On("spawnPaddle", response =>
@@ -204,7 +215,7 @@ public class PongGameplay : MonoBehaviour
         socket.Connect();
     }
 
-
+    //BALL LOGIC
     public void SpawnBall()
     {
         UnityMainThreadDispatcher.Instance().Enqueue(() =>
@@ -310,12 +321,26 @@ public class PongGameplay : MonoBehaviour
 
     //UI
     public void GameOver(string winner)
-    { 
-        Destroy(spawnedBall);
+    {
         gameOver = true;
+
+        Destroy(spawnedBall);
+
         uiManager.ActivateUIelement(uiManager.gameOvere_txt, true);
         uiManager.ActivateUIelement(uiManager.playerWon_txt, true);
         uiManager.SetPlayerWonText(winner);
+
+        if (winner == "left")
+        {
+            ScoreManager.Instance.totalScoreLeft++;
+            PongDatabase.Instance.UpdatePlayerScore(UIManager.Instance.leftPlayerName.text, ScoreManager.Instance.totalScoreLeft);
+        }
+        else if (winner == "right")
+        {
+            ScoreManager.Instance.totalScoreRight++;
+            PongDatabase.Instance.UpdatePlayerScore(UIManager.Instance.rightPlayerName.text, ScoreManager.Instance.totalScoreRight);
+        }
+
     }
 
     public void StartGame()
@@ -325,7 +350,10 @@ public class PongGameplay : MonoBehaviour
             DebugUtils.LogColor("Press space to start", "green");
             socket.Emit("spawnBall");
             socket.Emit("hideStartText");
+            socket.Emit("gameStart");
             uiManager.ActivateUIelement(uiManager.start_txt, false);
+            gameOn = true;
+
         }
     }
     public void JoinGame()
@@ -356,11 +384,8 @@ public class PongGameplay : MonoBehaviour
     {
         if(isPlayerAssigned && UIManager.Instance.nameAssigned && !isNameAssigned)
         {
-            UIManager.Instance.AssignName(playerRole);
-            
+            UIManager.Instance.AssignName(playerRole);    
             DebugUtils.LogColor($"Assigning name {playerRole} {UIManager.Instance.playerName}", "green");
-
-            PongDatabase.Instance.SendPlayerNameToDatabase(UIManager.Instance.playerName);
 
             socket.Emit("playerNameAssigned", new
             {
@@ -371,20 +396,15 @@ public class PongGameplay : MonoBehaviour
             isNameAssigned = true;
         } //Assignig name
 
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            JoinGame();
-            StartGame();
-
-        } //START GAME
-
-        if(gameOver && spawnedBall != null)
-        {
-            Destroy(spawnedBall);
-        } //GAME OVER
-
         if (!gameOver)
         {
+            if (Input.GetKeyDown(KeyCode.Space) && !gameOn)
+            {
+                JoinGame();
+                StartGame();
+                
+            } //START GAME
+
             if (ballSpawned && ballController != null) //ballOwner send position and velocity
             {
                 if (isBallOwner)
@@ -432,6 +452,24 @@ public class PongGameplay : MonoBehaviour
                 }
             } //MOVEMENT
         }
-     
+
+        if(gameOver && spawnedBall != null)
+        {
+            Destroy(spawnedBall);
+        } //GAME OVER
+        if(gameOver && Input.GetKeyDown(KeyCode.Space))
+        {
+            gameOver = false;
+            UIManager.Instance.ActivateUIelement(uiManager.gameOvere_txt, false);
+            UIManager.Instance.ActivateUIelement(uiManager.playerWon_txt, false);
+            UIManager.Instance.ActivateUIelement(uiManager.start_txt, true);
+            UIManager.Instance.ActivateUIelement(uiManager.waiting_txt, false);
+            UIManager.Instance.OpenLeaderboard();
+        } //RESTART GAME
+
+
+
+
+
     }
 }

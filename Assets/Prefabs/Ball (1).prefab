@@ -163,13 +163,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ballSpeed: 5
-  rb: {fileID: 0}
+  rb: {fileID: 9147982933121169050}
   xDirection: 0
   yDirection: 0
-  leftScore: 0
-  rightScore: 0
   goalHit: 0
   ballAnimator: {fileID: 0}
+  leftScore: 0
+  rightScore: 0
+  scoreManager: {fileID: 0}
 --- !u!95 &7744992587170906988
 Animator:
   serializedVersion: 5
