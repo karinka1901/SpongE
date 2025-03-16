@@ -7,8 +7,8 @@ public class PongDatabase : MonoBehaviour
 {
     public static PongDatabase Instance { get; private set; }
 
-    private string playerAddress = "http://192.168.0.240:5000/api/update-score";
-    private string leaderboardAddress = "http://192.168.0.240:5000/api/top-scores";
+    private string playerAddress = "http://localhost:5000/api/update-score";
+    private string leaderboardAddress = "http://localhost:5000/api/top-scores";
 
 
 
@@ -71,7 +71,7 @@ public class PongDatabase : MonoBehaviour
                 DebugUtils.LogColor("Received top scores: " + request.downloadHandler.text, "cyan");
 
                 JSONNode data = JSON.Parse(request.downloadHandler.text);
-                string leaderboardText = "Top 10 Players:\n";
+                string leaderboardText = "Top 5 Players:\n";
 
                 for (int i = 0; i < data.Count; i++)
                 {

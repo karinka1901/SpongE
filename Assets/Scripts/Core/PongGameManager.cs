@@ -48,7 +48,7 @@ public class PongGameManager : MonoBehaviour
     }
     private void Start()
     {
-        socket = new SocketIOUnity("http://192.168.0.240:3000"); 
+        socket = new SocketIOUnity("http://localhost:3000"); 
 
         socket.OnConnected += (sender, e) =>
         {
@@ -278,7 +278,7 @@ public class PongGameManager : MonoBehaviour
     {
         if (role == "left" && !leftPaddleSpawned)
         {
-            leftPaddle = Instantiate(leftPaddlePrefab, new Vector3(-3.82f, 0, 0), Quaternion.identity);
+            leftPaddle = Instantiate(leftPaddlePrefab, new Vector3(-5.76f, 0, 0), Quaternion.identity);
             // DebugUtils.LogColor("Left paddle spawned", "yellow");
             leftPaddleController = leftPaddle.GetComponent<PaddleController>();
             leftPaddleSpawned = true;
@@ -292,7 +292,7 @@ public class PongGameManager : MonoBehaviour
         }
         if (role == "right" && !rightPaddleSpawned)
         {
-            rightPaddle = Instantiate(rightPaddlePrefab, new Vector3(3.82f, 0, 0), Quaternion.identity);
+            rightPaddle = Instantiate(rightPaddlePrefab, new Vector3(5.76f, 0, 0), Quaternion.identity);
             rightPaddleController = rightPaddle.GetComponent<PaddleController>();
             // DebugUtils.LogColor("Right paddle spawned", "yellow");
             rightPaddleSpawned = true;

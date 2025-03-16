@@ -6,7 +6,7 @@ public class BallController : MonoBehaviour
     public float xDirection;
     public float yDirection;
     
-    public Animator ballAnimator;
+    public Animator anim;
     public Rigidbody2D rb;
 
     public int leftScore;
@@ -17,7 +17,7 @@ public class BallController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        ballAnimator = GetComponent<Animator>();
+        anim = GetComponent<Animator>();
 
         rightScore = ScoreManager.Instance.rightScore;
         leftScore = ScoreManager.Instance.leftScore; 
@@ -40,7 +40,7 @@ public class BallController : MonoBehaviour
     public void ResetBall()
     {
         rb.velocity = Vector2.zero;
-        ballAnimator.Play("goalHit");
+        anim.Play("goalHit");
         rb.position = Vector2.zero;
         DebugUtils.LogColor($"[BallController.cs]Ball reset", "grey");
     }
@@ -58,7 +58,8 @@ public class BallController : MonoBehaviour
         else if (collision.gameObject.CompareTag("LeftGoal"))
         {
             goalHit = true;
-
+         
+           
             ScoreManager.Instance.UpdateScore("right"); // Right player scores
 
             DebugUtils.LogColor($"[BallController.cs]Left goal hit, right paddle scores", "red");
@@ -69,11 +70,28 @@ public class BallController : MonoBehaviour
         {   
             goalHit = true;
             ScoreManager.Instance.UpdateScore("left"); // Left player scores
+           
+         
 
             DebugUtils.LogColor($"[BallController.cs]reight goal hit, left paddle scores", "blue");
-            ResetBall();
-            
-            
+            ResetBall();   
         }
+        else if(collision.gameObject.CompareTag("Floor"))
+        {
+           
+        
+        }
+
+        else if (collision.gameObject.CompareTag("Ceiling"))
+        {
+           
+         
+        }
+    }
+
+    public void ResetBallTransformAnim()
+    {
+        transform.rotation = new Quaternion(0, 0, 0, 0);
+       
     }
 }

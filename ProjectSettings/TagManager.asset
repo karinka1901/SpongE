@@ -11,6 +11,8 @@ TagManager:
   - RightGoal
   - LeftPaddle
   - RightPaddle
+  - Ceiling
+  - Floor
   layers:
   - Default
   - TransparentFX
