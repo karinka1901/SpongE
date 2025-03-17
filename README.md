@@ -11,3 +11,6 @@ Built with **Unity**, **Node.js**, and **MySQL** for player data and scores, usi
 
 ## 🫧Demo🧽
 ![Untitledvideo-MadewithClipchamp3-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/894fd213-4f53-4cb0-959e-5207a68e7fa7)
+
+# Server🫧
+https://github.com/karinka1901/UnityServer
