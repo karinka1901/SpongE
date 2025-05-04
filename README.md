@@ -1,5 +1,5 @@
 # 🫧SpongE🧽
-https://youtu.be/D7_Z7DCvuvU?si=kkiAzqo9iejMLPLm
+[https://youtu.be/D7_Z7DCvuvU?si=kkiAzqo9iejMLPLm](https://www.youtube.com/watch?v=DdjbOrAS0Zk)
 
 A multiplayer 2D **Pong** game with a spongy twist! 
 
@@ -10,10 +10,6 @@ Built with **Unity**, **Node.js**, and **MySQL** for player data and scores, usi
 - Multiplayer powered by Socket.IO (Node.js backend + SocketIOUnity in Unity)
 - Underwater Theme with bouncy sponges & a floating bubble ball
 - Leaderboard & Stats stored in MySQL
-
-  ## 🫧Overviewo🧽
-Uploading MySQL → Players scores(1).mp4…
-
 
 
 ## 🫧Demo🧽
